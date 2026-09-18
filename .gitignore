@@ -55,3 +55,7 @@ service-account.json
 
 # ============ Testcontainers ============
 .testcontainers/
+
+# ============ Maven Wrapper ============
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
