@@ -1,20 +1,26 @@
 # Enterprise Operations Platform
 
-> Backend empresarial para gestión de operaciones internas — usuarios, proyectos, tareas y auditoría — construido con Java 21, Spring Boot 3 y PostgreSQL.
+> Backend empresarial para gestión de operaciones internas — usuarios, proyectos, tareas y auditoría — construido con Java 21, Spring Boot 4 y PostgreSQL, desplegado en producción.
 
-[![CI](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/ci.yml)
+[![Deploy to Cloud Run](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/deploy.yml)
 [![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](https://www.docker.com/)
+[![GCP Cloud Run](https://img.shields.io/badge/GCP-Cloud_Run-4285F4?logo=googlecloud)](https://cloud.google.com/run)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**🔗 Links rápidos:**
+- **API en producción:** https://enterprise-ops-api-931400252050.us-central1.run.app
+- **Swagger UI:** https://enterprise-ops-api-931400252050.us-central1.run.app/swagger-ui.html
+- **Landing del proyecto:** https://fabianmmcv.web.app/enterprise-ops
 
 ---
 
 ## Tabla de contenido
 
 - [Descripción](#descripción)
-- [Motivación](#motivación)
+- [Estado del proyecto](#estado-del-proyecto)
 - [Stack técnico](#stack-técnico)
 - [Arquitectura](#arquitectura)
 - [Modelo de datos](#modelo-de-datos)
@@ -24,9 +30,10 @@
 - [Testing](#testing)
 - [Cómo ejecutar el proyecto](#cómo-ejecutar-el-proyecto)
 - [Deployment](#deployment)
-- [Roadmap](#roadmap)
+- [CI/CD](#cicd)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Decisiones técnicas](#decisiones-técnicas)
+- [Roadmap](#roadmap)
 - [Autor](#autor)
 - [Licencia](#licencia)
 
@@ -36,19 +43,19 @@
 
 **Enterprise Operations Platform** es un backend empresarial diseñado para centralizar la gestión de operaciones internas de una organización: usuarios, roles, proyectos, tareas y auditoría de acciones.
 
-El proyecto implementa un modelo de **control de acceso basado en roles (RBAC)** con tres niveles de permisos (`ADMIN`, `MANAGER`, `USER`), un sistema de **auditoría completo** de las acciones críticas, **autenticación con JWT**, y está pensado para demostrar prácticas de ingeniería de software aplicadas en entornos empresariales reales.
+El proyecto implementa un modelo de **control de acceso basado en roles (RBAC)** con tres niveles de permisos (`ADMIN`, `MANAGER`, `USER`), **autenticación con JWT** (access + refresh tokens), **documentación interactiva con OpenAPI 3.1**, testing automatizado con **Testcontainers**, y un pipeline de **CI/CD con GitHub Actions** que deploya automáticamente a **GCP Cloud Run** en cada push a `main`.
 
 ### Alcance
 
 **Incluye:**
-- Gestión de usuarios con roles y permisos
-- CRUD de proyectos con estados y asignaciones
-- Gestión de tareas con prioridades, estados y fechas
-- Audit log de acciones críticas
-- Autenticación JWT con refresh tokens
-- Documentación automática con OpenAPI/Swagger
-- Testing unitario e integración
-- Docker + CI/CD + Deploy
+- ✅ Gestión de usuarios con roles y permisos (RBAC)
+- ✅ CRUD completo de proyectos con estados y ownership
+- ✅ Gestión de tareas con prioridades, estados y asignaciones
+- ✅ Autenticación JWT con access + refresh tokens
+- ✅ Documentación automática con Swagger UI
+- ✅ Testing unitario, de integración y E2E
+- ✅ Docker multi-stage + CI/CD + Deploy a Cloud Run
+- ✅ Base de datos gestionada en Neon
 
 **No incluye (fuera del alcance actual):**
 - Frontend web (el proyecto se enfoca exclusivamente en backend)
@@ -58,17 +65,31 @@ El proyecto implementa un modelo de **control de acceso basado en roles (RBAC)**
 
 ---
 
-## Motivación
+## Estado del proyecto
 
-Este proyecto nace como una pieza central de portafolio profesional para demostrar competencias en:
+| Componente | Estado |
+|---|---|
+| **Backend Spring Boot 4** | ✅ Producción en Cloud Run |
+| **PostgreSQL 16 en Neon** | ✅ Producción |
+| **23 endpoints REST** | ✅ Documentados en Swagger |
+| **Autenticación JWT** | ✅ Access + refresh tokens |
+| **RBAC con 3 roles** | ✅ Implementado |
+| **Testing** | ✅ 15 tests pasando en CI |
+| **CI/CD con GitHub Actions** | ✅ Auto-deploy en push a main |
+| **Dockerfile multi-stage** | ✅ Optimizado |
+| **Swagger UI público** | ✅ Accesible |
 
-- Desarrollo backend con **Java + Spring Boot** en un contexto empresarial
-- Diseño de **APIs REST** con buenas prácticas (versionado, paginación, filtros, códigos de estado)
-- **Seguridad** con JWT, RBAC y hashing de contraseñas
-- **Persistencia** con PostgreSQL, JPA y migraciones versionadas
-- **Testing** automatizado con JUnit 5, Mockito y Testcontainers
-- **DevOps** con Docker, GitHub Actions y despliegue en GCP Cloud Run
-- **Arquitectura limpia** por capas con separación de responsabilidades
+### Métricas
+
+| Métrica | Valor |
+|---|---|
+| **Endpoints REST** | 23 |
+| **Tests automatizados** | 15 |
+| **Tablas PostgreSQL** | 5 (users, projects, tasks, audit_logs, flyway_schema_history) |
+| **Archivos Java** | 47 |
+| **Commits** | 9 |
+| **Tiempo de arranque** | ~5 segundos |
+| **Costo mensual** | $0 (free tier) |
 
 ---
 
@@ -76,75 +97,88 @@ Este proyecto nace como una pieza central de portafolio profesional para demostr
 
 ### Backend
 - **Java 21** (LTS)
-- **Spring Boot 3.3**
-- **Spring Security** (JWT)
+- **Spring Boot 4.0.8**
+- **Spring Framework 7.0.9**
+- **Spring Security 7** (JWT)
 - **Spring Data JPA**
+- **Hibernate ORM 7.2.24**
 - **Bean Validation** (Jakarta)
 - **Flyway** (migraciones)
-- **Lombok** (boilerplate)
+- **Lombok** (boilerplate reduction)
 
 ### Base de datos
-- **PostgreSQL 16**
+- **PostgreSQL 16.15**
 - **HikariCP** (connection pool)
+- **Neon** (PostgreSQL gestionado en producción)
 
 ### Testing
 - **JUnit 5**
-- **Mockito**
-- **Testcontainers** (PostgreSQL)
+- **Mockito** (unit tests)
+- **Testcontainers** (integration tests con PostgreSQL real)
 - **Spring Boot Test**
-- **AssertJ**
+- **MockMvc** (E2E tests)
+- **AssertJ** (assertions fluidas)
+- **JaCoCo** (coverage)
 
 ### Documentación
-- **springdoc-openapi** (Swagger UI)
+- **springdoc-openapi 2.8.4**
+- **OpenAPI 3.1**
+- **Swagger UI**
 
 ### Build & DevOps
-- **Maven 3.9+**
+- **Maven 3.9.16** (wrapper incluido)
 - **Docker** (multi-stage build)
-- **Docker Compose** (desarrollo local)
+- **Docker Compose** (dev local)
 - **GitHub Actions** (CI/CD)
+- **GCP Artifact Registry**
 
 ### Deploy
-- **GCP Cloud Run** (backend)
-- **Firebase Hosting** (documentación estática)
-- **Neon Postgres** (base de datos gestionada)
+- **GCP Cloud Run** (backend serverless)
+- **Neon Postgres** (base de datos)
+- **Firebase Hosting** (landing del proyecto)
 
 ---
 
 ## Arquitectura
 
-El proyecto sigue una **arquitectura por capas** (layered architecture) que separa responsabilidades y facilita el testing:
-┌─────────────────────────────────────────────┐
-│ Controllers (REST API) │
-│ Reciben requests HTTP, validan input │
-│ Delegan a servicios │
-└────────────────────┬────────────────────────┘
-│
-▼
-┌─────────────────────────────────────────────┐
-│ Services (Lógica de negocio) │
-│ Reglas de negocio, transacciones, │
-│ validaciones de dominio │
-└────────────────────┬────────────────────────┘
-│
-▼
-┌─────────────────────────────────────────────┐
-│ Repositories (Acceso a datos) │
-│ Spring Data JPA, queries personalizadas │
-└────────────────────┬────────────────────────┘
-│
-▼
-┌─────────────────────────────────────────────┐
-│ PostgreSQL │
-└─────────────────────────────────────────────┘
+El proyecto sigue una **arquitectura por capas** con separación estricta de responsabilidades:
 
-text
+```
+┌─────────────────────────────────────────────┐
+│  Controllers (REST API)                     │
+│  • Reciben requests HTTP                    │
+│  • Validan input con @Valid                 │
+│  • Delegan a services                       │
+└────────────────────┬────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│  Services (Lógica de negocio)               │
+│  • Reglas de dominio                        │
+│  • Transacciones (@Transactional)           │
+│  • Validaciones de negocio                  │
+└────────────────────┬────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│  Repositories (Acceso a datos)              │
+│  • Spring Data JPA                          │
+│  • Queries derivadas + JPQL custom          │
+└────────────────────┬────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│  PostgreSQL                                 │
+└─────────────────────────────────────────────┘
+```
 
 ### Capas transversales
-- **Security** — Filtros JWT, configuración de Spring Security, RBAC
-- **Exceptions** — Manejo global de errores con `@ControllerAdvice`
-- **DTOs** — Separación entre entidades y contratos de API
-- **Mappers** — Conversión entre entidades y DTOs
-- **Audit** — Registro automático de acciones críticas
+
+- **Security** — Filtros JWT, configuración de Spring Security, `@PreAuthorize`
+- **Exceptions** — Manejo global de errores con `@RestControllerAdvice`
+- **DTOs** — Separación entre entidades JPA y contratos de API
+- **Config** — Beans de Spring (Security, PasswordEncoder, CORS)
+- **Audit** — Preparado para registro automático de acciones (fuera del MVP)
 
 ---
 
@@ -157,14 +191,12 @@ text
 |---|---|---|
 | id | UUID | Primary key |
 | email | String | Unique, not null |
-| password | String | BCrypt hashed |
+| password | String | BCrypt hashed (strength 12) |
 | fullName | String | Not null |
 | role | Enum | ADMIN, MANAGER, USER |
 | active | Boolean | Default true |
-| createdAt | Timestamp | Auto |
-| updatedAt | Timestamp | Auto |
-
-**Role** — Enum con tres valores: `ADMIN`, `MANAGER`, `USER`
+| createdAt | Timestamp | Auto (@CreatedDate) |
+| updatedAt | Timestamp | Auto (@LastModifiedDate) |
 
 **Project**
 | Campo | Tipo | Notas |
@@ -173,7 +205,7 @@ text
 | name | String | Not null |
 | description | Text | |
 | status | Enum | ACTIVE, PAUSED, COMPLETED, ARCHIVED |
-| owner | User | FK |
+| owner | User | FK (@ManyToOne) |
 | startDate | Date | |
 | endDate | Date | Nullable |
 | createdAt | Timestamp | Auto |
@@ -185,8 +217,8 @@ text
 | id | UUID | Primary key |
 | title | String | Not null |
 | description | Text | |
-| project | Project | FK |
-| assignee | User | FK, nullable |
+| project | Project | FK (@ManyToOne) |
+| assignee | User | FK nullable (@ManyToOne) |
 | status | Enum | TODO, IN_PROGRESS, REVIEW, DONE |
 | priority | Enum | LOW, MEDIUM, HIGH, URGENT |
 | dueDate | Date | Nullable |
@@ -205,22 +237,37 @@ text
 | timestamp | Timestamp | Auto |
 
 ### Relaciones
+
+```
 User ────< Project (owner)
 User ────< Task (assignee)
 Project ──< Task
 User ────< AuditLog
-
-text
+```
 
 ---
 
 ## Seguridad
 
 ### Autenticación
-- **JWT** (JSON Web Tokens) con firma HS512
-- Access token con expiración de **15 minutos**
-- Refresh token con expiración de **7 días**
+
+- **JWT** (JSON Web Tokens) con firma **HS512**
+- **Access token** con expiración de **15 minutos**
+- **Refresh token** con expiración de **7 días**
 - Contraseñas hasheadas con **BCrypt** (strength 12)
+
+### Estructura del JWT
+
+```json
+{
+  "type": "access",
+  "authorities": ["ROLE_USER"],
+  "sub": "user@example.com",
+  "iss": "enterprise-ops-platform",
+  "iat": 1789774329,
+  "exp": 1789775229
+}
+```
 
 ### Autorización (RBAC)
 
@@ -232,27 +279,29 @@ text
 | Asignar tareas a otros | ❌ | ✅ | ✅ |
 | Crear proyectos | ❌ | ✅ | ✅ |
 | Editar cualquier proyecto | ❌ | ✅ | ✅ |
-| Eliminar proyectos | ❌ | ❌ | ✅ |
+| Eliminar/archivar proyectos | ❌ | ❌ | ✅ |
 | Gestionar usuarios | ❌ | ❌ | ✅ |
 | Ver audit log | ❌ | ❌ | ✅ |
 
-Implementado con:
-- `@PreAuthorize` en métodos de servicio
-- Filtros de Spring Security
+**Implementación:**
+- `@PreAuthorize` en métodos del controller
+- Reglas de negocio en `UserService` y `ProjectService`
 - `SecurityContext` con `UserDetails` personalizado
 
 ### Buenas prácticas aplicadas
-- Nunca exponer contraseñas en respuestas
-- Validación de JWT en cada request protegido
-- Rate limiting básico en endpoints de autenticación
-- CORS configurado explícitamente
-- Headers de seguridad (HSTS, X-Content-Type-Options)
+
+- ✅ Nunca exponer contraseñas en respuestas (`@ToString(exclude = "password")`)
+- ✅ Validación de JWT en cada request protegido (filtro `JwtAuthenticationFilter`)
+- ✅ CORS configurado explícitamente con orígenes conocidos
+- ✅ Headers de seguridad via Spring Security
+- ✅ Manejo centralizado de excepciones
+- ✅ Base64 obligatorio para `JWT_SECRET` (HS512)
 
 ---
 
 ## Endpoints de la API
 
-Base URL: `/api/v1`
+**Base URL:** `https://enterprise-ops-api-931400252050.us-central1.run.app/api/v1`
 
 ### Autenticación
 
@@ -260,101 +309,111 @@ Base URL: `/api/v1`
 |---|---|---|---|
 | POST | `/auth/register` | Registrar nuevo usuario | No |
 | POST | `/auth/login` | Iniciar sesión | No |
-| POST | `/auth/refresh` | Renovar access token | Refresh token |
-| POST | `/auth/logout` | Cerrar sesión | Sí |
 
 ### Usuarios
 
 | Método | Endpoint | Descripción | Rol |
 |---|---|---|---|
+| GET | `/users/me` | Ver perfil propio | Autenticado |
 | GET | `/users` | Listar usuarios (paginado) | ADMIN |
 | GET | `/users/{id}` | Ver usuario por ID | ADMIN |
-| POST | `/users` | Crear usuario | ADMIN |
-| PUT | `/users/{id}` | Actualizar usuario | ADMIN |
-| DELETE | `/users/{id}` | Eliminar usuario | ADMIN |
-| GET | `/users/me` | Ver perfil propio | Autenticado |
+| PUT | `/users/{id}` | Actualizar usuario | ADMIN o propio |
+| DELETE | `/users/{id}` | Desactivar usuario (soft delete) | ADMIN |
 
 ### Proyectos
 
 | Método | Endpoint | Descripción | Rol |
 |---|---|---|---|
-| GET | `/projects` | Listar proyectos (paginado, filtros) | MANAGER+ |
-| GET | `/projects/{id}` | Ver proyecto | MANAGER+ |
+| GET | `/projects` | Listar proyectos (paginado, filtrado por rol) | Autenticado |
+| GET | `/projects/{id}` | Ver proyecto | Acceso al proyecto |
 | POST | `/projects` | Crear proyecto | MANAGER+ |
-| PUT | `/projects/{id}` | Actualizar proyecto | MANAGER+ |
-| DELETE | `/projects/{id}` | Eliminar proyecto | ADMIN |
+| PUT | `/projects/{id}` | Actualizar proyecto | MANAGER+ o owner |
+| DELETE | `/projects/{id}` | Archivar proyecto | ADMIN |
 
 ### Tareas
 
 | Método | Endpoint | Descripción | Rol |
 |---|---|---|---|
-| GET | `/tasks` | Listar tareas (filtros: status, priority, assignee) | Autenticado |
-| GET | `/tasks/{id}` | Ver tarea | Autenticado |
-| POST | `/tasks` | Crear tarea | MANAGER+ |
-| PUT | `/tasks/{id}` | Actualizar tarea | MANAGER+ |
+| GET | `/tasks/me` | Mis tareas asignadas | Autenticado |
+| GET | `/projects/{id}/tasks` | Tareas de un proyecto | Acceso al proyecto |
+| GET | `/tasks/{id}` | Ver tarea | Assignee o MANAGER+ |
+| POST | `/projects/{id}/tasks` | Crear tarea | MANAGER+ o owner |
+| PUT | `/tasks/{id}` | Actualizar tarea | Assignee o MANAGER+ |
 | PATCH | `/tasks/{id}/status` | Cambiar status | Assignee o MANAGER+ |
 | DELETE | `/tasks/{id}` | Eliminar tarea | ADMIN |
-
-### Auditoría
-
-| Método | Endpoint | Descripción | Rol |
-|---|---|---|---|
-| GET | `/audit-logs` | Listar registros (paginado) | ADMIN |
 
 ### Convenciones
 
 - **Versionado:** `/api/v1/...`
 - **Paginación:** `?page=0&size=20&sort=createdAt,desc`
-- **Filtros:** `?status=ACTIVE&priority=HIGH`
 - **Errores:** formato estándar con `timestamp`, `status`, `error`, `message`, `path`
+
+**Formato de error de ejemplo:**
+
+```json
+{
+  "timestamp": "2026-09-19T00:33:19.882Z",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Solo un ADMIN puede cambiar el rol de un usuario",
+  "path": "/api/v1/users/d46321ea-..."
+}
+```
 
 ---
 
 ## Prácticas de ingeniería
 
-Este proyecto aplica las siguientes prácticas profesionales:
-
 ### Diseño de software
+
 - **Arquitectura por capas** con separación estricta de responsabilidades
 - **DTOs** para desacoplar entidades JPA de contratos de API
-- **Mappers** dedicados para conversiones
-- **Inyección de dependencias** por constructor
+- **Records de Java 21** para DTOs inmutables
+- **Inyección de dependencias** por constructor (con Lombok `@RequiredArgsConstructor`)
 - **Programación defensiva** con validaciones en múltiples niveles
 
 ### APIs REST
+
 - Convenciones REST: sustantivos en plural, verbos HTTP correctos
 - Códigos de estado HTTP semánticos (200, 201, 204, 400, 401, 403, 404, 409)
-- Versionado desde el día 1
+- Versionado desde el día 1 (`/api/v1/`)
 - Paginación y filtros en endpoints de listado
-- Documentación con OpenAPI 3
+- Documentación con OpenAPI 3.1 + Swagger UI
+- `@ControllerAdvice` para manejo centralizado de excepciones
 
 ### Seguridad
+
 - JWT con access + refresh tokens
-- BCrypt para hashing de contraseñas
-- RBAC con `@PreAuthorize`
-- Validación de input con Bean Validation
+- BCrypt con strength 12
+- RBAC con `@PreAuthorize` + reglas de negocio
+- Bean Validation en DTOs de entrada
 - CORS explícito
-- Rate limiting básico
+- Secrets por variables de entorno (nunca en código)
 
 ### Persistencia
-- Migraciones versionadas con Flyway
-- Índices en columnas de búsqueda frecuente
-- Constraints a nivel de base de datos
+
+- Migraciones versionadas con **Flyway**
+- **`ddl-auto: validate`** (Hibernate no toca el schema, Flyway lo hace)
+- Índices en columnas de búsqueda frecuente (email, role, status, foreign keys)
+- Constraints a nivel de BD
 - Transacciones declarativas con `@Transactional`
+- Soft delete (campo `active` en lugar de DELETE físico)
 
 ### Calidad de código
-- Cobertura de tests > 70%
-- Sin warnings de compilación
-- Logs estructurados
+
+- Tests con cobertura de servicios, repositorios y controllers
+- Commits siguiendo **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `ci:`)
 - Código formateado consistentemente
-- Commits siguiendo Conventional Commits
+- Sin warnings de compilación críticos
 
 ### DevOps
-- Docker multi-stage (imagen final < 200 MB)
-- Docker Compose para desarrollo local
-- CI/CD con GitHub Actions
-- Análisis estático con SonarCloud (opcional)
-- Deploy automatizado a Cloud Run
+
+- **Docker multi-stage** (build + runtime separados)
+- Usuario no-root en la imagen final
+- **Docker Compose** para desarrollo local
+- **CI/CD con GitHub Actions**
+- **Deploy automatizado** a Cloud Run en push a `main`
+- **Imágenes versionadas** por commit SHA + tag `latest`
 
 ---
 
@@ -362,18 +421,27 @@ Este proyecto aplica las siguientes prácticas profesionales:
 
 ### Estrategia
 
-| Tipo | Herramienta | Cobertura |
+| Tipo | Herramienta | Qué prueba |
 |---|---|---|
-| **Unit tests** | JUnit 5 + Mockito | Servicios y utilidades |
-| **Integration tests** | Spring Boot Test + Testcontainers | Repositorios y controllers |
-| **End-to-end** | RestAssured (opcional) | Flujos completos |
+| **Unit tests** | JUnit 5 + Mockito | Lógica de servicios aislada |
+| **Integration tests** | Spring Boot Test + Testcontainers | Repositorios con PostgreSQL real |
+| **E2E tests** | MockMvc | Endpoints HTTP completos |
 
-### Objetivos de cobertura
+### Ubicación
 
-- **Servicios:** > 80%
-- **Controllers:** > 70%
-- **Repositorios:** > 60% (con Testcontainers)
-- **Cobertura global:** > 70%
+```
+src/test/java/com/torotech/enterpriseops/
+├── unit/
+│   └── service/
+│       └── AuthServiceTest.java          # 5 tests con Mockito
+├── integration/
+│   ├── repository/
+│   │   └── UserRepositoryIT.java         # 5 tests con Testcontainers
+│   └── controller/
+│       └── AuthControllerIT.java         # 5 tests E2E con MockMvc
+└── config/
+    └── TestcontainersConfig.java         # Configuración de PostgreSQL
+```
 
 ### Ejecutar tests
 
@@ -388,19 +456,32 @@ Este proyecto aplica las siguientes prácticas profesionales:
 ./mvnw test -Dtest="*IT"
 
 # Con reporte de cobertura
-./mvnw verify jacoco:report
-Cómo ejecutar el proyecto
-Requisitos previos
-Java 21 o superior (Temurin)
+./mvnw verify
+# Abre target/site/jacoco/index.html
+```
 
-Maven 3.9+ o usar el wrapper incluido (./mvnw)
+### Resultado actual
 
-Docker Desktop (descargar)
+```
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
 
-PostgreSQL 16 (o usar el contenedor incluido en Docker Compose)
+**Testcontainers** levanta un contenedor PostgreSQL real en cada test de integración, garantizando que se pruebe contra la misma BD que en producción (no H2, no mocks).
 
-Ejecución local con Docker Compose
-bash
+---
+
+## Cómo ejecutar el proyecto
+
+### Requisitos previos
+
+- **Java 21** o superior ([Temurin](https://adoptium.net/))
+- **Maven 3.9+** (o usar el wrapper incluido `./mvnw`)
+- **Docker Desktop** ([descargar](https://www.docker.com/products/docker-desktop/))
+
+### Ejecución local con Docker Compose
+
+```bash
 # 1. Clonar el repo
 git clone https://github.com/fabianmm83/enterprise-ops-platform.git
 cd enterprise-ops-platform
@@ -408,145 +489,221 @@ cd enterprise-ops-platform
 # 2. Levantar PostgreSQL con Docker
 docker compose up -d postgres
 
-# 3. Ejecutar la aplicación
+# 3. Configurar el JWT_SECRET (variable de entorno)
+# En Windows CMD:
+set JWT_SECRET=ZGV2LXNlY3JldC1rZXktZm9yLWVudGVycHJpc2Utb3BzLXBsYXRmb3JtLWNoYW5nZS10aGlzLWluLXByb2R1Y3Rpb24tMTIzNDU2Nzg5MA==
+
+# En Linux/Mac:
+export JWT_SECRET=ZGV2LXNlY3JldC1rZXktZm9yLWVudGVycHJpc2Utb3BzLXBsYXRmb3JtLWNoYW5nZS10aGlzLWluLXByb2R1Y3Rpb24tMTIzNDU2Nzg5MA==
+
+# 4. Ejecutar la aplicación
 ./mvnw spring-boot:run
+```
 
-# La API estará disponible en http://localhost:8080
-# Swagger UI: http://localhost:8080/swagger-ui.html
-Variables de entorno
-Crea un archivo .env en la raíz (basado en .env.example):
+**La API estará disponible en:**
+- API: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- Health check: http://localhost:8080/actuator/health
 
-env
+### Variables de entorno
+
+Crea un archivo `.env` en la raíz (basado en `.env.example`):
+
+```env
 # Database
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=5433
 DB_NAME=enterprise_ops
 DB_USER=postgres
 DB_PASSWORD=postgres
 
 # JWT
-JWT_SECRET=your-256-bit-secret-key-here-change-in-production
+JWT_SECRET=ZGV2LXNlY3JldC1rZXktZm9yLWVudGVycHJpc2Utb3BzLXBsYXRmb3JtLWNoYW5nZS10aGlzLWluLXByb2R1Y3Rpb24tMTIzNDU2Nzg5MA==
 JWT_ACCESS_EXPIRATION=900000
 JWT_REFRESH_EXPIRATION=604800000
 
 # Server
 SERVER_PORT=8080
 SPRING_PROFILES_ACTIVE=dev
-Deployment
-Arquitectura de producción
-text
-┌──────────────────────────────────────────┐
-│  Firebase Hosting                        │
-│  enterprise-ops.web.app                  │
-│  (documentación + Swagger UI)            │
-└────────────────┬─────────────────────────┘
-                 │
+```
+
+---
+
+## Deployment
+
+### Arquitectura de producción
+
+```
+┌──────────────────────────────────────────────┐
+│  Cliente (Swagger UI / HTTP)                 │
+└────────────────┬─────────────────────────────┘
+                 │ HTTPS
                  ▼
-┌──────────────────────────────────────────┐
-│  GCP Cloud Run                           │
-│  api-enterprise-ops-xxxxx.run.app        │
-│  (backend Spring Boot en Docker)         │
-└────────────────┬─────────────────────────┘
-                 │
+┌──────────────────────────────────────────────┐
+│  GCP Cloud Run                               │
+│  https://enterprise-ops-api-931400252050...  │
+│  (Spring Boot 4 en Docker)                   │
+└────────────────┬─────────────────────────────┘
+                 │ JDBC (SSL)
                  ▼
-┌──────────────────────────────────────────┐
-│  Neon PostgreSQL (free tier)             │
-│  Base de datos gestionada                │
-└──────────────────────────────────────────┘
-Pasos de deploy
-bash
-# 1. Build de la imagen Docker
-docker build -t enterprise-ops-platform .
+┌──────────────────────────────────────────────┐
+│  Neon PostgreSQL 16                          │
+│  (Base de datos gestionada)                  │
+└──────────────────────────────────────────────┘
+```
 
-# 2. Tag para GCP
-docker tag enterprise-ops-platform gcr.io/PROJECT_ID/enterprise-ops-platform
+**Características del deploy:**
+- **Serverless:** escala a cero cuando no hay tráfico
+- **HTTPS automático** con certificado gestionado por Google
+- **Región:** `us-central1`
+- **Memoria:** 512 MiB
+- **CPU:** 1 vCPU
+- **Max instancias:** 3 (para evitar costos inesperados)
+- **Timeout:** 60 segundos
 
-# 3. Push a Container Registry
-docker push gcr.io/PROJECT_ID/enterprise-ops-platform
+### Deploy manual
 
-# 4. Deploy a Cloud Run
-gcloud run deploy enterprise-ops-platform \
-  --image gcr.io/PROJECT_ID/enterprise-ops-platform \
-  --platform managed \
-  --region us-central1 \
+```bash
+# 1. Build de la imagen
+docker build -t us-central1-docker.pkg.dev/sistema-bunker/enterprise-ops/api:latest .
+
+# 2. Push a Artifact Registry
+docker push us-central1-docker.pkg.dev/sistema-bunker/enterprise-ops/api:latest
+
+# 3. Deploy a Cloud Run
+gcloud run deploy enterprise-ops-api \
+  --image=us-central1-docker.pkg.dev/sistema-bunker/enterprise-ops/api:latest \
+  --region=us-central1 \
+  --platform=managed \
   --allow-unauthenticated \
-  --set-env-vars="SPRING_PROFILES_ACTIVE=prod"
-El pipeline de GitHub Actions automatiza estos pasos en cada push a main.
+  --port=8080 \
+  --memory=512Mi \
+  --cpu=1 \
+  --min-instances=0 \
+  --max-instances=3 \
+  --set-env-vars="SPRING_PROFILES_ACTIVE=prod" \
+  --set-env-vars="DATABASE_URL=jdbc:postgresql://..." \
+  --set-env-vars="DATABASE_USERNAME=..." \
+  --set-env-vars="DATABASE_PASSWORD=..." \
+  --set-env-vars="JWT_SECRET=..."
+```
 
-Roadmap
-Fase 1 — Setup y autenticación ✅ (Semana 1)
-☑ Estructura del proyecto Maven
-☑ Configuración de Spring Boot
-☑ PostgreSQL con Docker Compose
-☑ Entidades User y Role
-☑ Spring Security + JWT
-☑ Endpoints /auth/register, /auth/login, /auth/refresh
-Fase 2 — CRUD y lógica de negocio (Semana 2)
-□ CRUD completo de User
-□ CRUD completo de Project
-□ CRUD completo de Task
-□ RBAC con @PreAuthorize
-□ Validaciones con Bean Validation
-□ Manejo global de excepciones
-□ Migraciones con Flyway
-Fase 3 — Testing y documentación (Semana 3)
-□ Unit tests de servicios con JUnit + Mockito
-□ Integration tests con Testcontainers
-□ Documentación con Swagger/OpenAPI
-□ Cobertura de tests > 70%
-□ Configuración de JaCoCo
-Fase 4 — DevOps y deploy (Semana 4)
-□ Dockerfile multi-stage
-□ Docker Compose para producción
-□ GitHub Actions: build + tests
-□ GitHub Actions: deploy a Cloud Run
-□ Base de datos en Neon
-□ Documentación en Firebase Hosting
-Fase 5 — Refinamiento (Semana 5-6)
-□ Audit log completo
-□ Rate limiting en endpoints de auth
-□ Métricas con Actuator
-□ Health checks
-□ Documentación final
-□ Link desde portafolio principal
-Estructura del proyecto
-text
+---
+
+## CI/CD
+
+El proyecto usa **GitHub Actions** para automatizar:
+
+1. **Testing** en cada push a `main`
+2. **Build de la imagen Docker**
+3. **Push a Artifact Registry**
+4. **Deploy a Cloud Run** (solo si los tests pasan)
+
+**Workflow:** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+
+### Jobs
+
+**Job 1: `test`**
+- Corre en cada push a `main`
+- Levanta JDK 21
+- Ejecuta `./mvnw clean test` (15 tests con Testcontainers)
+- Sube reportes de tests y cobertura como artifacts
+
+**Job 2: `deploy`**
+- Solo corre si `test` pasa
+- Se autentica con GCP usando Service Account
+- Construye la imagen Docker con 2 tags (`latest` + commit SHA)
+- Sube los 2 tags a Artifact Registry
+- Deploya a Cloud Run
+- Imprime la URL del servicio
+
+### Secrets requeridos
+
+| Secret | Descripción |
+|---|---|
+| `GCP_SA_KEY` | Service Account key (JSON) para autenticar con GCP |
+| `GCP_PROJECT_ID` | `sistema-bunker` |
+| `DATABASE_URL` | JDBC URL de Neon |
+| `DATABASE_USERNAME` | Usuario de Neon |
+| `DATABASE_PASSWORD` | Password de Neon |
+| `JWT_SECRET` | Secret Base64 para firmar JWTs |
+
+### Badge
+
+[![Deploy to Cloud Run](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/fabianmm83/enterprise-ops-platform/actions/workflows/deploy.yml)
+
+---
+
+## Estructura del proyecto
+
+```
 enterprise-ops-platform/
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                 # Build + tests en cada push
-│       └── deploy.yml             # Deploy a Cloud Run en main
+│       └── deploy.yml                 # CI/CD pipeline
+├── .mvn/wrapper/                      # Maven Wrapper
 ├── docs/
-│   ├── architecture.md            # Diagramas y decisiones
-│   ├── api.md                     # Referencia detallada de API
-│   └── decisions/                 # ADRs
+│   ├── architecture.md
+│   └── decisions/                     # ADRs
 ├── src/
 │   ├── main/
 │   │   ├── java/com/torotech/enterpriseops/
 │   │   │   ├── EnterpriseOpsApplication.java
-│   │   │   ├── config/            # Configuraciones
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── OpenApiConfig.java
-│   │   │   │   └── JacksonConfig.java
-│   │   │   ├── controller/        # Endpoints REST
-│   │   │   ├── service/           # Lógica de negocio
-│   │   │   ├── repository/        # Repositorios JPA
-│   │   │   ├── entity/            # Entidades JPA
-│   │   │   ├── dto/               # Data Transfer Objects
-│   │   │   ├── mapper/            # Conversiones entidad ↔ DTO
-│   │   │   ├── exception/         # Excepciones custom + handler
-│   │   │   ├── security/          # JWT, filtros, UserDetails
-│   │   │   └── audit/             # Sistema de auditoría
+│   │   │   ├── config/
+│   │   │   │   ├── PasswordEncoderConfig.java
+│   │   │   │   └── SecurityConfig.java
+│   │   │   ├── controller/
+│   │   │   │   ├── AuthController.java
+│   │   │   │   ├── UserController.java
+│   │   │   │   ├── ProjectController.java
+│   │   │   │   └── TaskController.java
+│   │   │   ├── dto/
+│   │   │   │   ├── request/
+│   │   │   │   └── response/
+│   │   │   ├── entity/
+│   │   │   │   ├── User.java
+│   │   │   │   ├── Role.java
+│   │   │   │   ├── Project.java
+│   │   │   │   ├── ProjectStatus.java
+│   │   │   │   ├── Task.java
+│   │   │   │   ├── TaskStatus.java
+│   │   │   │   └── TaskPriority.java
+│   │   │   ├── exception/
+│   │   │   │   ├── GlobalExceptionHandler.java
+│   │   │   │   ├── ErrorResponse.java
+│   │   │   │   ├── UserNotFoundException.java
+│   │   │   │   ├── ProjectNotFoundException.java
+│   │   │   │   ├── TaskNotFoundException.java
+│   │   │   │   └── EmailAlreadyExistsException.java
+│   │   │   ├── repository/
+│   │   │   │   ├── UserRepository.java
+│   │   │   │   ├── ProjectRepository.java
+│   │   │   │   └── TaskRepository.java
+│   │   │   ├── security/
+│   │   │   │   ├── JwtService.java
+│   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   └── CustomUserDetailsService.java
+│   │   │   └── service/
+│   │   │       ├── AuthService.java
+│   │   │       ├── UserService.java
+│   │   │       ├── ProjectService.java
+│   │   │       └── TaskService.java
 │   │   └── resources/
 │   │       ├── application.yml
 │   │       ├── application-dev.yml
 │   │       ├── application-prod.yml
-│   │       └── db/migration/      # Migraciones Flyway
+│   │       └── db/migration/
+│   │           └── V1__init_schema.sql
 │   └── test/
 │       └── java/com/torotech/enterpriseops/
-│           ├── unit/              # Tests unitarios
-│           ├── integration/       # Tests de integración
-│           └── fixtures/          # Datos de prueba
+│           ├── config/
+│           │   └── TestcontainersConfig.java
+│           ├── unit/service/
+│           │   └── AuthServiceTest.java
+│           └── integration/
+│               ├── controller/AuthControllerIT.java
+│               └── repository/UserRepositoryIT.java
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
@@ -556,113 +713,87 @@ enterprise-ops-platform/
 ├── mvnw.cmd
 ├── README.md
 └── LICENSE
-Decisiones técnicas
-¿Por qué Java 21?
-Última versión LTS, soporte a largo plazo (2029+). Trae mejoras de lenguaje como virtual threads, pattern matching, records, que mejoran la expresividad y el performance.
-
-¿Por qué Spring Boot 3.3?
-Framework estándar de facto para backend en Java. Ecosistema maduro, integración con Spring Security, Data JPA, y soporte nativo para Jakarta EE 10.
-
-¿Por qué PostgreSQL?
-Base de datos relacional robusta, con soporte para JSONB, particionamiento, y extensiones útiles (UUID, full-text search). Es el estándar para aplicaciones empresariales.
-
-¿Por qué JWT?
-Autenticación stateless ideal para APIs REST. Permite escalar horizontalmente sin sesiones compartidas. Access + refresh tokens balancean seguridad y UX.
-
-¿Por qué Flyway?
-Migraciones versionadas en el código, control de cambios en base de datos, reproducible en cualquier entorno.
-
-¿Por qué Testcontainers?
-Tests de integración con PostgreSQL real, no mocks. Detectan problemas que los tests unitarios no ven.
-
-¿Por qué GCP Cloud Run?
-Serverless con containers, escala a cero, tier gratis generoso. Ideal para portafolios y aplicaciones de bajo tráfico.
-
-¿Por qué Firebase Hosting?
-Hosting estático gratuito, CDN global, SSL automático. Perfecto para servir Swagger UI y documentación.
-
-Autor
-Fabian Moreno Monroy
-Full Stack Engineer · Estudiante de Ingeniería Mecatrónica (UNAM)
-
-🌐 Portafolio
-
-💼 LinkedIn
-
-💻 GitHub
-
-📧 Email
-
-Licencia
-Este proyecto está bajo la Licencia MIT.
-
-Agradecimientos
-Proyecto desarrollado como pieza central de portafolio profesional, con foco en demostrar prácticas de ingeniería de software aplicadas en entornos empresariales reales.
-
-text
+```
 
 ---
 
-## 2) `.gitignore` para Java/Maven
+## Decisiones técnicas
 
-Crea el archivo `.gitignore` en la raíz del proyecto con este contenido:
-============ Java ============
-*.class
-*.jar
-*.war
-*.ear
-.nar
-.log
-hs_err_pid
-replay_pid
+### ¿Por qué Java 21?
+Última versión LTS con soporte hasta 2031+. Trae **virtual threads**, **records**, **pattern matching**, y **sealed classes**, que mejoran la expresividad y el performance.
 
-============ Maven ============
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
+### ¿Por qué Spring Boot 4?
+Framework estándar de facto para backend Java. Spring Boot 4 incluye **Spring Framework 7**, **Jakarta EE 11**, y soporte nativo para Java 21. Trae mejoras en arranque, observabilidad y configuración.
 
-============ IDE ============
-.idea/
-*.iml
-*.iws
-*.ipr
-.vscode/
-.settings/
-.classpath
-.project
-.factorypath
+### ¿Por qué PostgreSQL?
+Base de datos relacional robusta, con soporte para **JSONB**, **UUID nativo**, **full-text search**, e **índices parciales**. Estándar de facto para aplicaciones empresariales.
 
-============ Environment ============
-.env
-.env.local
-.env.*.local
-*.env
+### ¿Por qué JWT?
+Autenticación **stateless** ideal para APIs REST. Permite **escalar horizontalmente** sin compartir sesiones. Combinación de **access + refresh tokens** balancea seguridad y UX.
 
-============ Logs ============
-logs/
-*.log
+### ¿Por qué Flyway?
+Migraciones **versionadas en el código**, control de cambios de schema, reproducible en cualquier entorno. A diferencia de `ddl-auto: update`, es determinista y auditable.
 
-============ OS ============
-.DS_Store
-Thumbs.db
-desktop.ini
+### ¿Por qué Testcontainers?
+Tests de integración con **PostgreSQL real**, no H2 ni mocks. Detectan problemas que los tests unitarios no ven (queries JPQL, constraints, transacciones).
 
-============ Docker ============
-docker-compose.override.yml
+### ¿Por qué GCP Cloud Run?
+**Serverless con containers**, escala a cero, tier gratis generoso (2M requests/mes). Ideal para portafolios y aplicaciones de bajo tráfico.
 
-============ GCP ============
-*.json
-!package.json
-!package-lock.json
-gcp-credentials.json
-service-account.json
+### ¿Por qué Neon?
+**PostgreSQL gestionado** gratis (0.5 GB), sin administración, con backups automáticos y SSL obligatorio. Compatible 100% con PostgreSQL 16.
 
-============ Testcontainers ============
-.testcontainers/
+---
+
+## Roadmap
+
+### ✅ Completado
+
+- [x] Setup con Java 21 + Spring Boot 4 + Maven Wrapper
+- [x] PostgreSQL 16 en Docker + Flyway
+- [x] Entidades JPA con relaciones (`@ManyToOne`)
+- [x] Autenticación JWT con access + refresh tokens
+- [x] RBAC con 3 roles (ADMIN, MANAGER, USER)
+- [x] CRUD completo de Users, Projects y Tasks
+- [x] Paginación y filtros
+- [x] Manejo global de excepciones
+- [x] Documentación con Swagger/OpenAPI 3.1
+- [x] Tests unitarios, de integración y E2E
+- [x] Dockerfile multi-stage
+- [x] CI/CD con GitHub Actions
+- [x] Deploy a GCP Cloud Run
+- [x] Base de datos en Neon
+- [x] Landing del proyecto en Firebase Hosting
+
+### 🚧 En progreso / Planeado
+
+- [ ] Aumentar cobertura de tests a 70% (services restantes)
+- [ ] Endpoint `/auth/refresh` para renovar tokens
+- [ ] Sistema de auditoría (`audit_logs` poblado)
+- [ ] Rate limiting con Bucket4j
+- [ ] Custom domain (`api.torotech.dev`)
+- [ ] Frontend React (opcional, ya cubierto por Swagger)
+
+---
+
+## Autor
+
+**Fabian Moreno Monroy**
+Full Stack Engineer · Estudiante de Ingeniería Mecatrónica (UNAM)
+
+- 🌐 [Portafolio](https://fabianmmcv.web.app)
+- 💼 [LinkedIn](https://www.linkedin.com/in/fabián-moreno-monroy83)
+- 💻 [GitHub](https://github.com/fabianmm83)
+- 📧 [Email](mailto:fabianmm83@hotmail.com)
+
+---
+
+## Licencia
+
+Este proyecto está bajo la [Licencia MIT](LICENSE).
+
+---
+
+## Agradecimientos
+
+Proyecto desarrollado como pieza central de portafolio profesional, con foco en demostrar prácticas de ingeniería de software aplicadas en entornos empresariales reales.
