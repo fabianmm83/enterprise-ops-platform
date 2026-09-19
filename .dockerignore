@@ -1,0 +1,32 @@
+# Build artifacts
+target/
+!target/*.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Docs
+docs/
+documentacion/
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+src/test/
