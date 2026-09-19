@@ -1,0 +1,701 @@
+Documentación Técnica — Enterprise Operations Platform
+Voy a explicarte todo lo que tienes de forma técnica, capa por capa, como si estuvieras en una entrevista técnica o en un onboarding de equipo.
+
+1. Visión general del sistema
+Enterprise Operations Platform es una API REST backend para gestión de operaciones empresariales internas: usuarios, roles, proyectos, tareas y auditoría.
+
+Stack completo
+Capa	Tecnología
+Lenguaje	Java 21 (LTS)
+Framework	Spring Boot 4.0.8
+Framework base	Spring Framework 7.0.9
+Build	Maven 3.9.16 (vía Maven Wrapper)
+Base de datos	PostgreSQL 16.15 (Docker)
+ORM	Hibernate ORM 7.2.24
+Migraciones	Flyway (via spring-boot-starter-flyway)
+Seguridad	Spring Security 7 + JWT (JJWT 0.12.6)
+JSON	Jackson 3.x (nuevo en Spring Boot 4)
+Validación	Jakarta Bean Validation 3.0
+Docs	springdoc-openapi 2.8.4 (Swagger UI)
+Testing	JUnit 5 + Mockito + Testcontainers
+CI/CD	GitHub Actions (pendiente)
+Deploy	GCP Cloud Run (pendiente)
+2. Arquitectura por capas
+Tu proyecto sigue Layered Architecture con separación estricta de responsabilidades:
+
+text
+┌──────────────────────────────────────────────┐
+│  CONTROLLER (REST)                           │
+│  - Recibe HTTP                               │
+│  - Valida input (@Valid)                     │
+│  - Delega a Service                          │
+│  - Devuelve ResponseEntity                   │
+│  Archivos: AuthController                    │
+└──────────────────┬───────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────┐
+│  SERVICE (Lógica de negocio)                 │
+│  - Reglas de negocio                         │
+│  - Transacciones (@Transactional)            │
+│  - Coordina repositories                     │
+│  Archivos: AuthService                       │
+└──────────────────┬───────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────┐
+│  REPOSITORY (Acceso a datos)                 │
+│  - Spring Data JPA                           │
+│  - Queries derivadas                         │
+│  Archivos: UserRepository                    │
+└──────────────────┬───────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────┐
+│  ENTITY (Modelo de dominio)                  │
+│  - Mapeo JPA                                 │
+│  - Relaciones                                │
+│  Archivos: User, Role                        │
+└──────────────────┬───────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────┐
+│  PostgreSQL                                  │
+└──────────────────────────────────────────────┘
+Capas transversales (cross-cutting):
+
+Security (security/) — JWT, filtros, UserDetailsService
+
+Config (config/) — Beans de Spring, CORS, Security
+
+DTO (dto/) — Contratos de API
+
+Exception (exception/) — Manejo global de errores
+
+3. Estructura de archivos actual
+text
+enterprise-ops-platform/
+├── .github/workflows/           # (vacío, pendiente CI/CD)
+├── .mvn/wrapper/                # Maven Wrapper
+├── docs/                        # Documentación técnica
+│   ├── architecture.md
+│   └── decisions/README.md
+├── src/main/
+│   ├── java/com/torotech/enterpriseops/
+│   │   ├── EnterpriseOpsApplication.java   ← @SpringBootApplication
+│   │   │
+│   │   ├── config/
+│   │   │   ├── PasswordEncoderConfig.java  ← Bean BCrypt
+│   │   │   └── SecurityConfig.java         ← FilterChain + CORS + RBAC
+│   │   │
+│   │   ├── controller/
+│   │   │   └── AuthController.java         ← /auth/register, /auth/login
+│   │   │
+│   │   ├── dto/
+│   │   │   ├── request/
+│   │   │   │   ├── LoginRequest.java       ← record con validación
+│   │   │   │   └── RegisterRequest.java    ← record con validación
+│   │   │   └── response/
+│   │   │       ├── AuthResponse.java       ← access + refresh tokens
+│   │   │       └── UserResponse.java       ← sin password
+│   │   │
+│   │   ├── entity/
+│   │   │   ├── Role.java                   ← enum ADMIN/MANAGER/USER
+│   │   │   └── User.java                   ← @Entity con auditoría
+│   │   │
+│   │   ├── exception/
+│   │   │   ├── EmailAlreadyExistsException.java
+│   │   │   ├── ErrorResponse.java          ← formato estándar de errores
+│   │   │   └── GlobalExceptionHandler.java ← @RestControllerAdvice
+│   │   │
+│   │   ├── repository/
+│   │   │   └── UserRepository.java         ← extends JpaRepository
+│   │   │
+│   │   ├── security/
+│   │   │   ├── CustomUserDetailsService.java   ← carga usuarios de BD
+│   │   │   ├── JwtAuthenticationFilter.java    ← intercepta requests
+│   │   │   └── JwtService.java                 ← genera/valida tokens
+│   │   │
+│   │   └── service/
+│   │       └── AuthService.java            ← lógica de register/login
+│   │
+│   └── resources/
+│       ├── application.yml                 ← config base
+│       ├── application-dev.yml             ← perfil dev (5433)
+│       ├── application-prod.yml            ← perfil prod (Neon)
+│       └── db/migration/
+│           └── V1__init_schema.sql         ← 5 tablas
+│
+└── src/test/java/com/torotech/enterpriseops/
+    ├── unit/                               # (vacío, pendiente tests)
+    ├── integration/                        # (vacío)
+    └── fixtures/                           # (vacío)
+4. Modelo de datos
+Diagrama entidad-relación
+text
+┌──────────────────┐
+│      USERS       │
+├──────────────────┤
+│ id (UUID, PK)    │
+│ email (VARCHAR)  │◄──┐
+│ password (VARCHAR)│   │
+│ full_name        │   │
+│ role (VARCHAR)   │   │
+│ active (BOOLEAN) │   │
+│ created_at       │   │
+│ updated_at       │   │
+└────────┬─────────┘   │
+         │             │
+         │ 1:N         │
+         │             │
+┌────────▼─────────┐   │
+│    PROJECTS      │   │
+├──────────────────┤   │
+│ id (UUID, PK)    │   │
+│ name             │   │
+│ description      │   │
+│ status (VARCHAR) │   │
+│ owner_id (FK) ───┼───┘
+│ start_date       │
+│ end_date         │
+│ created_at       │
+│ updated_at       │
+└────────┬─────────┘
+         │
+         │ 1:N
+         │
+┌────────▼─────────┐
+│      TASKS       │
+├──────────────────┤
+│ id (UUID, PK)    │
+│ title            │
+│ description      │
+│ project_id (FK)  │
+│ assignee_id (FK) │────┐
+│ status (VARCHAR) │    │
+│ priority         │    │
+│ due_date         │    │
+│ created_at       │    │
+│ updated_at       │    │
+└──────────────────┘    │
+                        │
+         ┌──────────────┘
+         │
+┌────────▼──────────┐
+│    AUDIT_LOGS     │
+├───────────────────┤
+│ id (UUID, PK)     │
+│ user_id (FK)      │
+│ action            │
+│ entity_type       │
+│ entity_id (UUID)  │
+│ ip_address        │
+│ timestamp         │
+└───────────────────┘
+Tablas creadas (migración V1)
+Tabla	Filas	Propósito
+users	1	Usuarios del sistema
+projects	0	Proyectos empresariales
+tasks	0	Tareas por proyecto
+audit_logs	0	Registro de acciones
+flyway_schema_history	1	Control de migraciones
+Decisiones de diseño
+UUID como PK (no auto-increment) → mejor para sistemas distribuidos, evita enumeración
+
+Enums como VARCHAR (no ordinal) → legibilidad en BD, tolerante a reordenamientos
+
+created_at / updated_at con TIMESTAMP WITH TIME ZONE → sin problemas de zonas horarias
+
+Auditoría automática con @CreatedDate / @LastModifiedDate de Spring Data
+
+Foreign keys con ON DELETE RESTRICT/CASCADE/SET NULL → integridad referencial explícita
+
+5. Flujo de autenticación JWT
+Fase 1: Registro (POST /api/v1/auth/register)
+text
+┌────────────┐
+│  Cliente   │──► POST /register {email, password, fullName}
+└────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│ AuthController.register(@Valid RegisterRequest) │
+│  - @Valid activa Bean Validation            │
+│  - Si falla → 400 Bad Request               │
+└────────────┬────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────┐
+│ AuthService.register()                      │
+│  1. Normalizar email (lowercase, trim)      │
+│  2. Verificar si ya existe → 409 Conflict   │
+│  3. Hashear password con BCrypt(12)         │
+│  4. Crear User con role=USER, active=true   │
+│  5. Guardar en BD                           │
+│  6. Generar access token (15 min)           │
+│  7. Generar refresh token (7 días)          │
+│  8. Devolver AuthResponse                   │
+└────────────┬────────────────────────────────┘
+             │
+             ▼
+┌────────────┐
+│  Cliente   │◄── 201 {accessToken, refreshToken, user}
+└────────────┘
+Fase 2: Login (POST /api/v1/auth/login)
+text
+┌────────────┐
+│  Cliente   │──► POST /login {email, password}
+└────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│ AuthController.login(@Valid LoginRequest)   │
+└────────────┬────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────┐
+│ AuthService.login()                         │
+│  1. authenticationManager.authenticate()    │
+│     → Carga user de BD (CustomUserDetailsService)
+│     → Compara password con BCrypt.matches() │
+│     → Si falla → BadCredentialsException → 401
+│  2. Buscar usuario en BD                    │
+│  3. Generar access + refresh tokens         │
+│  4. Devolver AuthResponse                   │
+└────────────┬────────────────────────────────┘
+             │
+             ▼
+┌────────────┐
+│  Cliente   │◄── 200 {accessToken, refreshToken, user}
+└────────────┘
+Fase 3: Request autenticado (endpoints protegidos)
+text
+┌────────────┐
+│  Cliente   │──► GET /api/v1/users/me
+│            │    Header: Authorization: Bearer <token>
+└────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│ JwtAuthenticationFilter.doFilterInternal()  │
+│  1. Leer header Authorization               │
+│  2. Extraer token (quitar "Bearer ")        │
+│  3. jwtService.extractUsername(token)       │
+│  4. Cargar UserDetails desde BD             │
+│  5. jwtService.isTokenValid(token, user)    │
+│     → Verifica firma, expiración, subject   │
+│  6. Setear Authentication en SecurityContext│
+└────────────┬────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────┐
+│ Controller (ya autenticado)                 │
+│  - Puede acceder a SecurityContextHolder    │
+│  - Respeta @PreAuthorize si aplica          │
+└─────────────────────────────────────────────┘
+Estructura del JWT
+Access Token payload:
+
+json
+{
+  "type": "access",
+  "authorities": ["ROLE_USER"],
+  "sub": "test@example.com",
+  "iss": "enterprise-ops-platform",
+  "iat": 1789774329,
+  "exp": 1789775229
+}
+Algoritmo: HS512 (HMAC + SHA-512)
+
+Firma: con signingKey derivada del JWT_SECRET (Base64)
+
+Duración: 15 minutos (900000 ms)
+
+Refresh token: mismo formato pero "type": "refresh", 7 días
+
+6. Seguridad — detalles técnicos
+SecurityConfig
+java
+@Configuration
+@EnableMethodSecurity   // habilita @PreAuthorize
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        return http
+            .csrf(AbstractHttpConfigurer::disable)      // JWT es stateless
+            .cors(cors -> cors.configurationSource(...)) // CORS explícito
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(STATELESS)) // sin sesiones HTTP
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", ...).permitAll()
+                .anyRequest().authenticated())
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+}
+Decisiones clave:
+
+Decisión	Razón
+csrf disable	JWT no usa cookies de sesión, así que CSRF no aplica
+STATELESS	No guardamos sesiones, cada request se autentica con JWT
+@EnableMethodSecurity	Permite @PreAuthorize("hasRole('ADMIN')") en controllers
+CORS explícito	Solo permite orígenes conocidos (localhost:5173, etc.)
+Filtro JWT antes de UsernamePasswordAuthenticationFilter	Nuestro filtro corre primero y setea el SecurityContext
+Rutas públicas vs protegidas
+Ruta	Acceso
+/api/v1/auth/**	Público
+/v3/api-docs/**	Público
+/swagger-ui/**	Público
+/actuator/health	Público
+/actuator/info	Público
+OPTIONS /**	Público (preflight CORS)
+Todo lo demás	Requiere JWT
+BCrypt
+java
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(12);
+}
+Strength 12 = 2^12 = 4096 iteraciones. Balance entre seguridad (~250ms) y UX.
+
+CustomUserDetailsService
+java
+public UserDetails loadUserByUsername(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(...);
+    return User.builder()
+        .username(user.getEmail())
+        .password(user.getPassword())
+        .disabled(!user.getActive())
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
+        .build();
+}
+Nota: Spring Security requiere el prefijo ROLE_ cuando usas hasRole().
+
+7. API REST — endpoints actuales
+POST /api/v1/auth/register
+Request:
+
+json
+{
+  "email": "test@example.com",
+  "password": "Password123!",
+  "fullName": "Test User"
+}
+Validaciones (Bean Validation):
+
+email: obligatorio, formato válido, máx 255
+
+password: obligatorio, 8-100 chars, mayúscula + minúscula + número + especial
+
+fullName: obligatorio, 2-255 chars
+
+Response 201:
+
+json
+{
+  "accessToken": "eyJhbGci...",
+  "refreshToken": "eyJhbGci...",
+  "tokenType": "Bearer",
+  "expiresIn": 900000,
+  "user": {
+    "id": "5912c648-4775-4d9d-afc0-016544c2d0a6",
+    "email": "test@example.com",
+    "fullName": "Test User",
+    "role": "USER",
+    "active": true,
+    "createdAt": "2026-09-18T23:32:09.093418Z"
+  }
+}
+POST /api/v1/auth/login
+Request:
+
+json
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+Response 200: mismo formato que register.
+
+Códigos de error
+Código	Caso
+400	Validación fallida
+401	Credenciales inválidas
+409	Email duplicado
+500	Error inesperado
+8. Manejo de errores
+Todos los errores tienen formato estándar:
+
+json
+{
+  "timestamp": "2026-09-18T23:33:21.926Z",
+  "status": 409,
+  "error": "Conflict",
+  "message": "El email ya está registrado: test@example.com",
+  "path": "/api/v1/auth/register",
+  "details": null
+}
+Con details en validación:
+
+json
+{
+  "status": 400,
+  "details": [
+    "password: La contraseña debe tener entre 8 y 100 caracteres",
+    "password: La contraseña debe incluir mayúscula..."
+  ]
+}
+@RestControllerAdvice captura:
+
+EmailAlreadyExistsException → 409
+
+BadCredentialsException, UsernameNotFoundException → 401
+
+MethodArgumentNotValidException → 400 con detalles
+
+Exception (catch-all) → 500
+
+9. Configuración (perfiles)
+application.yml (común)
+yaml
+spring:
+  application.name: enterprise-ops-platform
+  profiles.active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    open-in-view: false          # anti-pattern deshabilitado
+    hibernate.ddl-auto: validate # Hibernate NO modifica el schema (Flyway lo hace)
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson.default-property-inclusion: non_null
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}                       # Base64 obligatorio
+    access-token-expiration-ms: 900000          # 15 min
+    refresh-token-expiration-ms: 604800000      # 7 días
+    issuer: enterprise-ops-platform
+application-dev.yml
+yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/enterprise_ops
+    username: postgres
+    password: postgres
+    hikari.maximum-pool-size: 10
+  jpa.show-sql: true
+
+logging.level:
+  com.torotech.enterpriseops: DEBUG
+  org.hibernate.SQL: DEBUG
+  org.hibernate.orm.jdbc.bind: TRACE
+application-prod.yml
+yaml
+spring:
+  datasource:
+    url: ${DATABASE_URL}       # variables de entorno en Cloud Run
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    hikari.maximum-pool-size: 5
+logging.level.root: WARN
+10. Migraciones Flyway
+V1__init_schema.sql
+Convención de nombres: V{version}__{descripcion}.sql (doble guion bajo)
+
+Crea:
+
+users + índices en email y role
+
+projects + FK a users + índices en owner_id y status
+
+tasks + FK a projects y users + índices
+
+audit_logs + FK a users
+
+Tabla de control flyway_schema_history (auto-creada)
+
+Beneficios:
+
+Versionado de schema en git
+
+Reproducible en cualquier entorno
+
+baseline-on-migrate: true para entornos existentes
+
+11. Docker
+docker-compose.yml
+yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: enterprise-ops-postgres
+    ports:
+      - "5433:5432"           # 5433 en host por conflicto con nativo
+    environment:
+      POSTGRES_DB: enterprise_ops
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+Notas:
+
+postgres:16-alpine → imagen ligera (~80 MB vs 400 MB de Debian)
+
+Volumen persistente postgres_data
+
+Healthcheck para saber cuándo está listo
+
+12. Build & Deploy
+pom.xml — puntos clave
+Aspecto	Detalle
+Parent	spring-boot-starter-parent:4.0.8
+Java	21 (source + target)
+Dependencies	starters de Spring Boot + JJWT + springdoc + Lombok + Testcontainers
+Plugins	spring-boot-maven-plugin + maven-compiler-plugin + jacoco
+Lombok	Versión explícita 1.18.34 en <properties>
+Flyway	spring-boot-starter-flyway (no flyway-core) — cambio de Spring Boot 4
+Comandos comunes
+bash
+# Compilar
+mvnw.cmd clean compile
+
+# Correr con perfil dev
+set JWT_SECRET=<base64>
+mvnw.cmd spring-boot:run
+
+# Build de producción
+mvnw.cmd clean package
+
+# Tests
+mvnw.cmd test
+mvnw.cmd verify jacoco:report
+13. Testing (pendiente)
+Planificado
+Tipo	Herramienta	Ubicación
+Unit	JUnit 5 + Mockito	src/test/java/.../unit/
+Integration	Spring Boot Test + Testcontainers	src/test/java/.../integration/
+E2E	RestAssured (opcional)	src/test/java/.../e2e/
+Objetivo de cobertura: > 70% global, > 80% en servicios.
+
+Testcontainers levanta un PostgreSQL real en cada test (no H2, no mocks). Esto garantiza que los tests prueben contra la BD de producción.
+
+14. Decisiones técnicas clave (para entrevistas)
+Decisión	Alternativa	Por qué
+PostgreSQL	MySQL, MongoDB	Relacional para operaciones empresariales, JSONB futuro, robusto
+Flyway	Liquibase, Hibernate ddl-auto	Versionado en SQL puro, reproducible, sin magia
+JWT	Sesiones HTTP	Stateless, escala horizontal sin sesiones compartidas
+Access + Refresh tokens	Solo access	Balance seguridad/UX. Access corto (15m), refresh largo (7d)
+DTOs con records	Clases	Inmutabilidad, menos boilerplate, Java 21 idiomático
+@EntityListeners	Triggers SQL	Auditoría a nivel aplicación (más flexible)
+Layered architecture	Hexagonal, DDD	Suficiente para MVP, fácil de migrar a hexagonal después
+UUID	Long autoincrement	Distribuible, no enumerable, mejor para APIs públicas
+BCrypt(12)	Argon2, scrypt	Estándar, bien soportado, 250ms razonable
+15. Comandos de referencia rápida
+bash
+# --- PostgreSQL (Docker) ---
+docker compose up -d postgres           # Levantar
+docker compose down                     # Detener (conserva volumen)
+docker compose down -v                  # Detener + borrar datos
+docker ps                               # Ver contenedores
+docker logs enterprise-ops-postgres     # Ver logs de PostgreSQL
+
+# --- Conectar a PostgreSQL ---
+docker exec -it enterprise-ops-postgres psql -U postgres -d enterprise_ops
+
+# --- Ver tablas ---
+docker exec -it enterprise-ops-postgres psql -U postgres -d enterprise_ops -c "\dt"
+
+# --- Ver usuarios ---
+docker exec -it enterprise-ops-postgres psql -U postgres -d enterprise_ops -c "SELECT * FROM users;"
+
+# --- Ver migraciones ---
+docker exec -it enterprise-ops-postgres psql -U postgres -d enterprise_ops -c "SELECT * FROM flyway_schema_history;"
+
+# --- Spring Boot ---
+set JWT_SECRET=ZGV2LXNlY3JldC1rZXk...
+mvnw.cmd spring-boot:run                # Correr
+mvnw.cmd clean compile                  # Compilar
+mvnw.cmd clean package                  # Build jar
+mvnw.cmd test                           # Tests
+
+# --- Git ---
+git status
+git add .
+git commit -m "feat: ..."
+git push
+git log --oneline
+16. Métricas actuales del proyecto
+Métrica	Valor
+Archivos Java	18
+Líneas de código Java	~1,300
+Tablas PostgreSQL	5
+Endpoints REST	2 (register, login)
+Migraciones Flyway	1
+Commits en main	4
+Cobertura tests	0% (pendiente)
+Java version	21.0.12.1
+Spring Boot version	4.0.8
+Spring Framework version	7.0.9
+Hibernate version	7.2.24
+17. Diferenciadores técnicos del proyecto
+Cuando estés en una entrevista, esto es lo que hace especial tu proyecto:
+
+Java 21 + Spring Boot 4 — stack de vanguardia (no el típico tutorial con Java 11 + Spring Boot 2)
+
+Arquitectura por capas con separación estricta — controllers, services, repositories, DTOs
+
+JWT con access + refresh tokens — patrón de producción, no tutorial básico
+
+Migraciones versionadas con Flyway — no ddl-auto: update (anti-pattern común)
+
+@RestControllerAdvice global — manejo de errores centralizado y consistente
+
+BCrypt strength 12 — hashing con costo computacional adecuado
+
+Bean Validation en DTOs, no en entidades — separación de responsabilidades
+
+CORS explícito con orígenes conocidos, no *
+
+Records de Java 21 para DTOs inmutables — código idiomático moderno
+
+Docker Compose con healthcheck y volumen persistente
+
+Documentación Swagger/OpenAPI integrada con anotaciones
+
+Auditoría automática con @CreatedDate / @LastModifiedDate
+
+README profesional con badges, arquitectura y roadmap
+
+Convenciones de commits (Conventional Commits: feat, chore, docs)
+
+Estructura escalable — fácil agregar Projects, Tasks, AuditLogs
+
+18. Próximos pasos pendientes
+Fase	Contenido	Archivos nuevos
+Fase 5	CRUD Users + RBAC	UserService, UserController, UpdateUserRequest, UserNotFoundException
+Fase 6	CRUD Projects + Tasks	ProjectService, ProjectController, TaskService, TaskController
+Fase 7	RBAC con @PreAuthorize	Aplicar reglas en los métodos
+Fase 8	Tests	Unit + Integration con Testcontainers
+Fase 9	Dockerfile + CI/CD	.github/workflows/ci.yml, Dockerfile, deploy.yml
+Fase 10	Deploy producción	GCP Cloud Run + Neon + Firebase Hosting
+Resumen ejecutivo
+Tienes un backend Spring Boot profesional con:
+
+✅ Arquitectura limpia por capas
+
+✅ Autenticación JWT funcional con access + refresh tokens
+
+✅ Persistencia en PostgreSQL con migraciones versionadas
+
+✅ Manejo de errores centralizado
+
+✅ Validación de entrada
+
+✅ Documentación Swagger
+
+✅ Docker para desarrollo local
+
+✅ Código subido a GitHub con commits semánticos
