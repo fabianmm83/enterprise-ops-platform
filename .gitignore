@@ -58,4 +58,10 @@ service-account.json
 
 # ============ Maven Wrapper ============
 .mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.properties 
+# GCP credentials 
+github-actions-key.json 
+*.json 
+!package.json 
+!package-lock.json 
+!tsconfig.json 
