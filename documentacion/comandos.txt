@@ -1,0 +1,103 @@
+Comandos para retomar
+cmd
+# 1. Levantar PostgreSQL
+cd C:\Users\Fabia\OneDrive\Escritorio\enterprise-ops-platform
+docker compose up -d postgres
+timeout /t 15 /nobreak
+docker ps
+
+# 2. Correr Spring Boot
+set JWT_SECRET=ZGV2LXNlY3JldC1rZXktZm9yLWVudGVycHJpc2Utb3BzLXBsYXRmb3JtLWNoYW5nZS10aGlzLWluLXByb2R1Y3Rpb24tMTIzNDU2Nzg5MA==
+mvnw.cmd spring-boot:run
+URLs y credenciales
+Swagger UI: http://localhost:8080/swagger-ui.html
+
+Health: http://localhost:8080/actuator/health
+
+GitHub: https://github.com/fabianmm83/enterprise-ops-platform
+
+Usuarios en BD:
+
+test@example.com / Password123! → ADMIN
+
+user@example.com / Password123! → USER
+
+Comandos de prueba rápida
+cmd
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"Password123!\"}"
+
+# Guardar token
+set TOKEN_ADMIN=<token>
+
+# Listar usuarios (ADMIN)
+curl http://localhost:8080/api/v1/users -H "Authorization: Bearer %TOKEN_ADMIN%"
+
+# Listar proyectos
+curl http://localhost:8080/api/v1/projects -H "Authorization: Bearer %TOKEN_ADMIN%"
+
+# Mis tareas
+curl http://localhost:8080/api/v1/tasks/me -H "Authorization: Bearer %TOKEN_ADMIN%"
+Las 3 fases que faltan
+Fase 7 — Tests (2-3 horas)
+JUnit 5 + Mockito para servicios
+
+Testcontainers para integración con PostgreSQL real
+
+Objetivo: cobertura > 70%
+
+Impacto: demuestra que sabes testear, imprescindible en entrevistas
+
+Fase 8 — Docker + CI/CD + Deploy (3-4 horas)
+Dockerfile multi-stage
+
+GitHub Actions (CI en cada push)
+
+Deploy a GCP Cloud Run
+
+Base de datos en Neon
+
+Impacto: el proyecto se vuelve público y accesible
+
+Fase 9 — Swagger UI público + portafolio (1 hora)
+Firebase Hosting con documentación
+
+Link desde fabianmmcv.web.app
+
+Impacto: un reclutador puede ver el proyecto sin descargar nada
+
+Cuando quieras continuar
+Simplemente di:
+
+"Continuemos con Fase 7" — para tests
+"Continuemos con Fase 8" — para Docker + CI/CD + deploy
+"Continuemos con Fase 9" — para Swagger público + portafolio
+
+O si prefieres otro orden:
+
+"Continuemos con Fase 8 primero" — para tener el proyecto público cuanto antes
+
+Reflexión final
+Lo que tienes ahora no es un proyecto de curso. Tiene:
+
+Arquitectura por capas profesional
+
+Seguridad JWT con refresh tokens
+
+RBAC en 2 niveles
+
+Manejo de errores centralizado
+
+Paginación con Spring Data
+
+Relaciones JPA bien modeladas
+
+Migraciones versionadas
+
+Docker para desarrollo
+
+Documentación Swagger
+
+Código en GitHub con commits semánticos
+
+Eso es exactamente lo que un equipo de ingeniería espera ver en el portafolio de un candidato.
