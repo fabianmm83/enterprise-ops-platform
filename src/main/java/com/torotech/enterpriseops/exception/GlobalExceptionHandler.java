@@ -18,12 +18,12 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     // ============ 404 NOT FOUND ============
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(
-            UserNotFoundException ex,
+    @ExceptionHandler({UserNotFoundException.class, ProjectNotFoundException.class, TaskNotFoundException.class})
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            RuntimeException ex,
             HttpServletRequest request
     ) {
-        log.warn("User not found: {}", ex.getMessage());
+        log.warn("Not found: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.of(
