@@ -92,6 +92,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",   // Vite dev
                 "http://localhost:3000",   // Alternativa
+                "http://localhost:5174",  
                 "https://enterprise-ops.web.app"  // Producción (futuro)
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
